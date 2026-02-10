@@ -34,6 +34,22 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* 모바일 브라우저 기본 스타일 초기화 (iOS 파란색 버튼 이슈 해결) */
+        button,
+        input,
+        select,
+        textarea {
+            font-family: inherit;
+            font-size: inherit;
+            color: inherit;
+            background: none;
+            border: none;
+            outline: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
         body {
             background-color: var(--bg-color);
             font-family: 'Outfit', sans-serif;
@@ -44,6 +60,8 @@
             min-height: 100vh;
             color: var(--text-black);
             padding: 20px 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .calendar-wrapper {
@@ -139,6 +157,7 @@
             transition: color 0.2s;
         }
 
+        /* 화살표 위치: 카드 좌우 끝 기준 16px 고정 및 터치 영역 48x48 확대 */
         .nav-btn {
             position: absolute;
             top: 52%;
@@ -146,30 +165,34 @@
             background: none;
             border: none;
             cursor: pointer;
-            padding: 10px;
             z-index: 10;
+            width: 48px;
+            height: 48px;
+            /* 터치 영역 48x48 확보 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .nav-btn.prev {
-            left: 16px;
+            left: 10px;
+            /* 터치 영역 확대로 인한 시각적 위치 보정 (기존 16px -> 10px) */
         }
 
         .nav-btn.next {
-            right: 16px;
+            right: 10px;
+            /* 터치 영역 확대로 인한 시각적 위치 보정 (기존 16px -> 10px) */
         }
 
         .nav-btn svg {
             width: 24px;
             height: 24px;
-            stroke: #d1d2d6;
+            stroke: #222222;
+            /* 회색에서 고정 검정색(#222222)으로 변경 */
             stroke-width: 2px;
             fill: none;
             stroke-linecap: round;
             stroke-linejoin: round;
-        }
-
-        .nav-btn:hover svg {
-            stroke: var(--text-black);
         }
 
         .day-circle-deco {
