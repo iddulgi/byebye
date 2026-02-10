@@ -218,8 +218,16 @@
             min-height: 4.5rem;
         }
 
-        .recommend-btn {
-            background-color: #222222;
+        /* 하단 버튼 그룹: 가로 2개 배치 (간격 8px) */
+        .btn-group {
+            display: flex;
+            width: 100%;
+            gap: 8px;
+        }
+
+        .btn-style {
+            flex: 1;
+            /* 가로 가득 채우기(Fill) */
             color: white;
             border: none;
             padding: 20px 0;
@@ -227,13 +235,21 @@
             font-size: 1.1rem;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s;
-            width: 100%;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s, background-color 0.2s;
+            text-align: center;
         }
 
-        .recommend-btn:active {
-            transform: scale(0.98);
+        .btn-style:active {
+            transform: scale(0.96);
+        }
+
+        .recommend-btn {
+            background-color: #222222;
+        }
+
+        .cheer-btn {
+            background-color: #777777;
         }
 
         .modal-overlay {
@@ -334,7 +350,10 @@
             </div>
             <div class="d-day-msg" id="display-msg">31일 남았어요</div>
         </div>
-        <button class="recommend-btn" onclick="showFoodRecommendation()">점메추</button>
+        <div class="btn-group">
+            <button class="btn-style cheer-btn" onclick="showCheerMessage()">힘들때..</button>
+            <button class="btn-style recommend-btn" onclick="showFoodRecommendation()">점메추</button>
+        </div>
     </div>
 
     <div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
@@ -347,14 +366,34 @@
 
     <script>
         let viewDate = new Date();
-        const targetDate = new Date(2026, 2, 13);
+        const START_LIMIT = new Date(2026, 1, 11); // 2월 11일 (JS 월은 0부터 시작)
+        const END_LIMIT = new Date(2026, 2, 13);   // 3월 13일
         const foodList = ["떡볶이", "샤브샤브", "춘식도락", "샐러드", "짬뽕", "된장찌개", "소고기", "낙곱새", "부대찌개", "돈가스"];
+
+        // [17차 고도화] 힘들때.. 버튼 클릭 시 보여줄 이미지 목록
+        // byebye 폴더 내에 images 폴더를 만들고 아래 이름으로 이미지를 넣어주세요.
+        const cheerImages = [
+            "images/cheer1.jpg", "images/cheer2.jpg", "images/cheer3.jpg",
+            "images/cheer4.jpg", "images/cheer5.jpg", "images/cheer6.jpg",
+            "images/cheer7.jpg", "images/cheer8.jpg", "images/cheer9.jpg",
+            "images/cheer10.jpg", "images/cheer11.jpg"
+        ];
 
         function init() {
             const now = new Date();
             const kstOffset = 9 * 60 * 60 * 1000;
             const kstDate = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + kstOffset);
-            viewDate = kstDate;
+
+            // 오늘 날짜(kstDate)가 제한 범위 밖이면 범위 내로 조정
+            const today = new Date(kstDate.getFullYear(), kstDate.getMonth(), kstDate.getDate());
+
+            if (today < START_LIMIT) {
+                viewDate = new Date(START_LIMIT);
+            } else if (today > END_LIMIT) {
+                viewDate = new Date(END_LIMIT);
+            } else {
+                viewDate = today;
+            }
             updateUI();
         }
 
@@ -382,7 +421,7 @@
             }
 
             const todayReset = new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate());
-            const targetReset = new Date(2026, 2, 13);
+            const targetReset = new Date(END_LIMIT.getFullYear(), END_LIMIT.getMonth(), END_LIMIT.getDate());
             const diffTime = targetReset - todayReset;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -400,14 +439,23 @@
             document.getElementById('display-msg').innerHTML = message;
         }
 
-        function changeDate(offset) { viewDate.setDate(viewDate.getDate() + offset); updateUI(); }
+        function changeDate(offset) {
+            const newDate = new Date(viewDate);
+            newDate.setDate(newDate.getDate() + offset);
+
+            // 2월 11일(START_LIMIT) ~ 3월 13일(END_LIMIT) 범위 내에서만 날짜 변경 허용
+            if (newDate >= START_LIMIT && newDate <= END_LIMIT) {
+                viewDate = newDate;
+                updateUI();
+            }
+        }
 
         function showFoodRecommendation() {
-            const dayOfWeek = viewDate.getDay();
-            const foodResult = document.getElementById('food-result');
             const modalHeader = document.getElementById('modal-header');
+            const foodResult = document.getElementById('food-result');
             modalHeader.textContent = "오늘의 추천 메뉴";
-            if (dayOfWeek === 0 || dayOfWeek === 6) {
+            foodResult.style.fontSize = "2.2rem"; // 텍스트 크기 초기화
+            if (viewDate.getDay() === 0 || viewDate.getDay() === 6) {
                 foodResult.textContent = "아무거나";
             } else {
                 const lastFood = localStorage.getItem('lastFood');
@@ -417,6 +465,21 @@
                 localStorage.setItem('lastFood', selectedFood);
                 foodResult.textContent = selectedFood;
             }
+            document.getElementById('modal-overlay').style.display = 'flex';
+        }
+
+        function showCheerMessage() {
+            const modalHeader = document.getElementById('modal-header');
+            const foodResult = document.getElementById('food-result');
+            modalHeader.textContent = "오늘의 토닥토닥";
+
+            // 랜덤 이미지 선택
+            const randomImg = cheerImages[Math.floor(Math.random() * cheerImages.length)];
+
+            // 이미지 출력 (가로 100%, 라운드 처리)
+            foodResult.innerHTML = `<img src="${randomImg}" style="width: 100%; height: auto; border-radius: 12px; display: block; margin: 0 auto; min-height: 100px; background: #f8f9fa;" alt="이미지 준비중..">`;
+            foodResult.style.fontSize = "0"; // 이미지 주변 불필요한 공백 제거
+
             document.getElementById('modal-overlay').style.display = 'flex';
         }
 
